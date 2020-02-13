@@ -53,18 +53,10 @@ class local_jwttomoodletoken_external extends external_api {
      */
     public static function gettoken($accesstoken) {
         global $CFG, $DB, $PAGE, $USER;
-        $PAGE->set_url('/webservice/rest/server.php', [
-            //                'wstoken'            => required_param('wstoken', PARAM_RAW_TRIMMED),
-            //                'wsfunction'         => 'local_jwttomoodletoken_' . __FUNCTION__,
-            //                'useremail'          => $useremail,
-            //                'since'              => $since,
-            //                'moodlewsrestformat' => optional_param('moodlewsrestformat', 'xml', PARAM_ALPHANUM)
-        ]);
+        $PAGE->set_url('/webservice/rest/server.php', []);
         $params = self::validate_parameters(self::gettoken_parameters(), [
                 'accesstoken' => $accesstoken
         ]);
-
-//        return ['moodletoken' => $params['accesstoken']];
 
         $pubkey = get_config('local_jwttomoodletoken', 'pubkey');
         $pubalgo = get_config('local_jwttomoodletoken', 'pubalgo');
@@ -126,7 +118,6 @@ class local_jwttomoodletoken_external extends external_api {
         external_log_token_request($token);
 
         return [
-            // 'userid'            => $user->id,
                 'moodletoken' => $token->token
         ];
     }
