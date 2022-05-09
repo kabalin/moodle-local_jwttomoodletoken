@@ -10,7 +10,7 @@
 
 # Requests
 
-Try for instance this to req1uest amobile token given an accesstoken:
+Try for instance this to request a mobile token for a given access token:
 
 ```
 https://your.moodle/webservice/rest/server.php?wstoken=<YOUR_TOKEN>>&wsfunction=local_jwttomoodletoken_gettoken&accesstoken=
