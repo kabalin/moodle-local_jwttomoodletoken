@@ -52,7 +52,7 @@ class local_jwttomoodletoken_external extends external_api {
      * @throws invalid_parameter_exception
      */
     public static function gettoken($accesstoken) {
-        global $CFG, $DB, $PAGE, $USER;
+        global $CFG, $DB, $PAGE, $SITE, $USER;
         $PAGE->set_url('/webservice/rest/server.php', []);
         $params = self::validate_parameters(self::gettoken_parameters(), [
                 'accesstoken' => $accesstoken
@@ -65,11 +65,10 @@ class local_jwttomoodletoken_external extends external_api {
 
         // TODO si ok validate signature, expiration etc. => sinon HTTP unauthorized 401
 
-        $email = strtolower($token_contents->email);
+        $email = strtolower($token_contents->preferred_username);
 
         $user = $DB->get_record('user', [
                 'username'  => $email,
-                'auth'      => 'shibboleth',
                 'suspended' => 0,
                 'deleted'   => 0
         ], '*', IGNORE_MISSING);
@@ -77,16 +76,19 @@ class local_jwttomoodletoken_external extends external_api {
         if (!$user) {
             // We have to create this user as it does not yet exist.
             $newuser = (object)[
-                    'auth'         => 'shibboleth',
+                    'auth'         => 'SAML2',
                     'confirmed'    => 1,
                     'policyagreed' => 0,
                     'deleted'      => 0,
                     'suspended'    => 0,
+                    'description'  => 'Autocreated from Azure AD',
                     'username'     => $email,
+                    'email'        => $email,
                     'password'     => 'not cached',
-                    'firstname'    => $email,
-                    'lastname'     => $email,
+                    'firstname'    => $token_contents->name,
+                    'lastname'     => $token_contents->name,
                     'timecreated'  => time(),
+                    'mnethostid'   => $SITE->id,
             ];
             $newuserid = $DB->insert_record('user', $newuser);
             $user = $DB->get_record('user', ['id' => $newuserid], '*', MUST_EXIST);
@@ -109,7 +111,11 @@ class local_jwttomoodletoken_external extends external_api {
         //        $token = external_generate_token(EXTERNAL_TOKEN_PERMANENT, $service, $user->id, \context_system::instance(),
         //                $validuntil);
 
-        // Ugly hack.
+
+//        core\session\manager::login_user($user);
+        set_moodle_cookie($email);
+
+        // Ugly hack on global vars
         $realuser = $USER;
         $USER = $user;
         $token = external_generate_token_for_current_user($service);
