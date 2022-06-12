@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/lib/php-jwt/src/JWT.php');
+require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
 
 use \Firebase\JWT;
 

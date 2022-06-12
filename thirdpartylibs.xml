@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>phpjwt</location>
+    <name>PHP-JWT</name>
+    <license>BSD</license>
+    <version>6.2.0</version>
+    <licenseversion></licenseversion>
+  </library>
+</libraries>
