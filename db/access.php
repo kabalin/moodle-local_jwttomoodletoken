@@ -25,10 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-        'local/jwttomoodletoken:usews' => [
-                'captype'      => 'write',
-                'contextlevel' => CONTEXT_SYSTEM,
-                'archetypes'   => []
-        ]
+    'local/jwttomoodletoken:usews' => [
+            'captype'      => 'write',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes'   => []
+    ]
 ];
 

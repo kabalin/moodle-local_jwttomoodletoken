@@ -25,21 +25,21 @@
 defined('MOODLE_INTERNAL') || die();
 
 $services = [
-        'local_jwttomoodletoken_webservice' => [
-                'functions'          => ['local_jwttomoodletoken_gettoken'],
-                'requiredcapability' => 'local/jwttomoodletoken:usews',
-                'restrictedusers'    => 0,
-                'enabled'            => 1
-        ]
+    'local_jwttomoodletoken_webservice' => [
+        'functions' => ['local_jwttomoodletoken_gettoken'],
+        'requiredcapability' => 'local/jwttomoodletoken:usews',
+        'restrictedusers' => 0,
+        'enabled' => 1
+    ]
 ];
 
 $functions = [
-        'local_jwttomoodletoken_gettoken' => [
-                'classname'   => 'local_jwttomoodletoken_external',
-                'methodname'  => 'gettoken',
-                'classpath'   => 'local/jwttomoodletoken/externallib.php',
-                'description' => 'given a valid Unil keycloak jwt, provides mobile token for PocketCampus ',
-                'type'        => 'write'
-        ]
+    'local_jwttomoodletoken_gettoken' => [
+        'classname' => \local_jwttomoodletoken\external\get_token::class,
+        'methodname' => 'execute',
+        'description' => 'In response to valid Unil keycloak jwt, provides mobile token for PocketCampus',
+        'type' => 'read',
+        'loginrequired' => false,
+    ]
 ];
 

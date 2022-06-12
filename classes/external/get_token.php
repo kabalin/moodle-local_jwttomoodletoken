@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,43 +14,46 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
+
+namespace local_jwttomoodletoken\external;
+
+use external_api;
+use external_function_parameters;
+use external_single_structure;
+use external_value;
+use context_system;
+use moodle_exception;
+use Firebase\JWT;
+
 /**
+ * Web service function to retrieve access token.
+ *
  * @package    local_jwttomoodletoken
  * @author     Nicolas Dunand <nicolas.dunand@unil.ch>
  * @copyright  2020 Copyright Université de Lausanne, RISET {@link http://www.unil.ch/riset}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
-
-use \Firebase\JWT;
-
-// cf. https://github.com/firebase/php-jwt
-
-require_once($CFG->libdir . '/externallib.php');
-
-class local_jwttomoodletoken_external extends external_api {
+class get_token extends external_api {
 
     /**
-     * @return external_multiple_structure
+     * Parameters for retrieving access token.
+     *
+     * @return external_function_parameters
      */
-    public static function gettoken_returns() {
-        return new external_single_structure([
-                'moodletoken' => new external_value(PARAM_ALPHANUM, 'valid Moodle mobile token')
+    public static function execute_parameters(): external_function_parameters {
+        return new external_function_parameters([
+                'accesstoken' => new external_value(PARAM_RAW_TRIMMED, 'the JWT access token as yielded by keycloak')
         ]);
     }
 
     /**
-     * @param $useremail
-     * @param $since
+     * Retrieve access token.
      *
+     * @param string $accesstoken
      * @return array
-     * @throws coding_exception
-     * @throws invalid_parameter_exception
      */
-    public static function gettoken($accesstoken) {
+    public static function execute(string $accesstoken): array {
         global $CFG, $DB, $PAGE, $SITE, $USER;
         $PAGE->set_url('/webservice/rest/server.php', []);
         $params = self::validate_parameters(self::gettoken_parameters(), [
@@ -129,13 +131,13 @@ class local_jwttomoodletoken_external extends external_api {
     }
 
     /**
-     * @return external_function_parameters
+     * Return for retrieving access token.
+     *
+     * @return external_single_structure
      */
-    public static function gettoken_parameters() {
-        return new external_function_parameters([
-                'accesstoken' => new external_value(PARAM_RAW_TRIMMED, 'the JWT access token as yielded by keycloak')
+    public static function execute_returns(): external_single_structure {
+        return new external_single_structure([
+            'moodletoken' => new external_value(PARAM_ALPHANUM, 'valid Moodle mobile token')
         ]);
     }
-
 }
-
