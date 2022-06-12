@@ -55,15 +55,20 @@ class get_token extends external_api {
      */
     public static function execute(string $accesstoken): array {
         global $CFG, $DB, $PAGE, $SITE, $USER;
-        $PAGE->set_url('/webservice/rest/server.php', []);
-        $params = self::validate_parameters(self::gettoken_parameters(), [
-                'accesstoken' => $accesstoken
-        ]);
+        //$PAGE->set_url('/webservice/rest/server.php', []);
 
+        // Parameter and permission validation.
+        $params = self::validate_parameters(self::execute_parameters(), [
+            'accesstoken' => $accesstoken,
+        ]);
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('local/jwttomoodletoken:usews', $context);
+
+        // Decode token.
         $pubkey = get_config('local_jwttomoodletoken', 'pubkey');
         $pubalgo = get_config('local_jwttomoodletoken', 'pubalgo');
-
-        $token_contents = JWT\JWT::decode($params['accesstoken'], $pubkey, [$pubalgo]);
+        $token_contents = JWT::decode($params['accesstoken'], $pubkey, [$pubalgo]);
 
         // TODO si ok validate signature, expiration etc. => sinon HTTP unauthorized 401
 
@@ -126,7 +131,7 @@ class get_token extends external_api {
         external_log_token_request($token);
 
         return [
-                'moodletoken' => $token->token
+            'moodletoken' => $token->token
         ];
     }
 
