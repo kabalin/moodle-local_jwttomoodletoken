@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
-
 namespace local_jwttomoodletoken\external;
+
+require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
 
 use external_api;
 use external_function_parameters;
@@ -24,7 +24,7 @@ use external_single_structure;
 use external_value;
 use context_system;
 use moodle_exception;
-use Firebase\JWT;
+use Firebase\JWT\JWT;
 
 /**
  * Web service function to retrieve access token.

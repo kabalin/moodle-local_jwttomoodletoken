@@ -42,4 +42,3 @@ $functions = [
         'loginrequired' => false,
     ]
 ];
-
