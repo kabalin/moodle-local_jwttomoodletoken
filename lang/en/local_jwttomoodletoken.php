@@ -26,6 +26,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Moodle UNIL JWT to mobiletoken web service';
 $string['pubkey'] = 'Public Key';
+$string['pubkeysetting'] = 'Public Key Settings';
+$string['pubkeysettingdesc'] = 'Public Key is used for tokens decoding using specified signature algorithm. If JWKS URI is configured, key sets is used instead of Public key, so this configuration is ignored.';
 $string['pubalgo'] = 'Signature algorithm';
+$string['jwksuri'] = 'JWKS URI';
+$string['jwksuridesc'] = 'JSON Web Key Sets URI to use as source of keys for tokens decoding.';
 $string['jwttomoodletoken:usews'] = 'Use web service for jwttomoodletoken';
 

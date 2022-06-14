@@ -25,6 +25,7 @@ use external_value;
 use context_system;
 use moodle_exception;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 /**
  * Web service function to retrieve access token.
@@ -55,7 +56,6 @@ class get_token extends external_api {
      */
     public static function execute(string $accesstoken): array {
         global $CFG, $DB, $PAGE, $SITE, $USER;
-        //$PAGE->set_url('/webservice/rest/server.php', []);
 
         // Parameter and permission validation.
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -65,69 +65,60 @@ class get_token extends external_api {
         self::validate_context($context);
         require_capability('local/jwttomoodletoken:usews', $context);
 
-        // Decode token.
+        // Check if the service exists and is enabled.
+        $service = $DB->get_record('external_services', ['shortname' => MOODLE_OFFICIAL_MOBILE_SERVICE, 'enabled' => 1]);
+        if (empty($service)) {
+            http_response_code(503);
+            throw new moodle_exception('servicenotavailable', 'webservice');
+        }
+
+        // Check settings.
+        $jwksuri = get_config('local_jwttomoodletoken', 'jwksuri');
         $pubkey = get_config('local_jwttomoodletoken', 'pubkey');
         $pubalgo = get_config('local_jwttomoodletoken', 'pubalgo');
-        $token_contents = JWT::decode($params['accesstoken'], $pubkey, [$pubalgo]);
+        
+        if ($jwksuri) {
+            // JWKS.
+        } else if ($pubkey) {
+            // Decode token using public key.
+            $token_contents = JWT::decode($params['accesstoken'], new Key($pubkey, $pubalgo));            
+        } else {
+            // We need JWKS URL or public key to proceed.
+            http_response_code(503);
+            throw new moodle_exception('servicenotavailable', 'webservice');
+        }
 
         // TODO si ok validate signature, expiration etc. => sinon HTTP unauthorized 401
 
         $email = strtolower($token_contents->preferred_username);
 
-        $user = $DB->get_record('user', [
-                'username'  => $email,
-                'suspended' => 0,
-                'deleted'   => 0
-        ], '*', IGNORE_MISSING);
-
-        if (!$user) {
+        if ($user = \core_user::get_user_by_username($email)) {
+            // User has to be active.
+            \core_user::require_active_user($user);
+        } else {
             // We have to create this user as it does not yet exist.
             $newuser = (object)[
-                    'auth'         => 'SAML2',
-                    'confirmed'    => 1,
-                    'policyagreed' => 0,
-                    'deleted'      => 0,
-                    'suspended'    => 0,
-                    'description'  => 'Autocreated from Azure AD',
-                    'username'     => $email,
-                    'email'        => $email,
-                    'password'     => 'not cached',
-                    'firstname'    => $token_contents->name,
-                    'lastname'     => $token_contents->name,
-                    'timecreated'  => time(),
-                    'mnethostid'   => $SITE->id,
+                'auth'         => 'SAML2',
+                'confirmed'    => 1,
+                'policyagreed' => 0,
+                'deleted'      => 0,
+                'suspended'    => 0,
+                'description'  => 'Autocreated from Azure AD',
+                'username'     => $email,
+                'email'        => $email,
+                'password'     => 'not cached',
+                'firstname'    => $token_contents->name,
+                'lastname'     => $token_contents->name,
+                'timecreated'  => time(),
+                'mnethostid'   => $CFG->mnet_localhost_id,
             ];
             $newuserid = $DB->insert_record('user', $newuser);
-            $user = $DB->get_record('user', ['id' => $newuserid], '*', MUST_EXIST);
+            $user = \core_user::get_user($newuserid, '*', MUST_EXIST);
         }
 
-        // Check if the service exists and is enabled.
-        $service = $DB->get_record('external_services', [
-                'shortname' => 'moodle_mobile_app',
-                'enabled'   => 1
-        ]);
-        if (empty($service)) {
-            throw new moodle_exception('servicenotavailable', 'webservice');
-            http_response_code(503);
-            die();
-        }
-
-        // Get an existing token or create a new one.
-        //        require_once($CFG->dirroot . '/lib/externallib.php');
-        //        $validuntil = time() + $CFG->tokenduration; // Défaut : 12 semaines
-        //        $token = external_generate_token(EXTERNAL_TOKEN_PERMANENT, $service, $user->id, \context_system::instance(),
-        //                $validuntil);
-
-
-//        core\session\manager::login_user($user);
-        set_moodle_cookie($email);
-
-        // Ugly hack on global vars
-        $realuser = $USER;
-        $USER = $user;
+        // Set current user, generate token and log token request.
+        \core\session\manager::set_user($user);
         $token = external_generate_token_for_current_user($service);
-        $USER = $realuser;
-
         external_log_token_request($token);
 
         return [

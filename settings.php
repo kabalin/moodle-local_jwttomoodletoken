@@ -24,18 +24,36 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
+
 if ($hassiteconfig) {
 
-
     $settings =
-            new admin_settingpage('local_jwttomoodletoken', new lang_string('pluginname', 'local_jwttomoodletoken'));
-
-    $settings->add(new admin_setting_configtextarea('local_jwttomoodletoken/pubkey',
-            get_string('pubkey', 'local_jwttomoodletoken'), '', '', PARAM_RAW));
-
-    $settings->add(new admin_setting_configtext('local_jwttomoodletoken/pubalgo',
-            get_string('pubalgo', 'local_jwttomoodletoken'), '', '', PARAM_ALPHANUM));
-
+        new admin_settingpage('local_jwttomoodletoken', new lang_string('pluginname', 'local_jwttomoodletoken'));
     $ADMIN->add('localplugins', $settings);
+
+    if ($ADMIN->fulltree) {
+
+        // JWKS URI.
+        $settings->add(new admin_setting_configtext('local_jwttomoodletoken/jwksuri',
+            get_string('jwksuri', 'local_jwttomoodletoken'),
+            get_string('jwksuridesc', 'local_jwttomoodletoken'),
+            '', PARAM_URL));
+
+        // Public key settings heading.
+        $settings->add(new admin_setting_heading('pubkeyssetting',
+            get_string('pubkeysetting', 'local_jwttomoodletoken'),
+            get_string('pubkeysettingdesc', 'local_jwttomoodletoken')));
+
+        // Public key.
+        $settings->add(new admin_setting_configtextarea('local_jwttomoodletoken/pubkey',
+            get_string('pubkey', 'local_jwttomoodletoken'), '', '', PARAM_RAW_TRIMMED));
+
+        // Select algo.
+        $options = array_combine(array_keys(\Firebase\JWT\JWT::$supported_algs), array_keys(\Firebase\JWT\JWT::$supported_algs));
+        $settings->add(new admin_setting_configselect('local_jwttomoodletoken/pubalgo',
+            get_string('pubalgo', 'local_jwttomoodletoken'), '', 'HS256', $options));
+
+    }
 }
 
