@@ -17,6 +17,7 @@
 namespace local_jwttomoodletoken\external;
 
 require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
+require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/Key.php');
 
 use external_api;
 use external_function_parameters;
@@ -24,6 +25,7 @@ use external_single_structure;
 use external_value;
 use context_system;
 use moodle_exception;
+use local_jwttomoodletoken\local\helper;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -55,7 +57,7 @@ class get_token extends external_api {
      * @return array
      */
     public static function execute(string $accesstoken): array {
-        global $CFG, $DB, $PAGE, $SITE, $USER;
+        global $CFG, $DB;
 
         // Parameter and permission validation.
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -78,7 +80,8 @@ class get_token extends external_api {
         $pubalgo = get_config('local_jwttomoodletoken', 'pubalgo');
         
         if ($jwksuri) {
-            // JWKS.
+            // Decode token using keys set url.
+            $token_contents = helper::decode_token($params['accesstoken'], $jwksuri, $pubalgo);
         } else if ($pubkey) {
             // Decode token using public key.
             $token_contents = JWT::decode($params['accesstoken'], new Key($pubkey, $pubalgo));            
@@ -88,10 +91,7 @@ class get_token extends external_api {
             throw new moodle_exception('servicenotavailable', 'webservice');
         }
 
-        // TODO si ok validate signature, expiration etc. => sinon HTTP unauthorized 401
-
         $email = strtolower($token_contents->preferred_username);
-
         if ($user = \core_user::get_user_by_username($email)) {
             // User has to be active.
             \core_user::require_active_user($user);
@@ -122,7 +122,7 @@ class get_token extends external_api {
         external_log_token_request($token);
 
         return [
-            'moodletoken' => $token->token
+            'moodletoken' => $token->token,
         ];
     }
 

@@ -40,14 +40,9 @@ if ($hassiteconfig) {
             get_string('jwksuridesc', 'local_jwttomoodletoken'),
             '', PARAM_URL));
 
-        // Public key settings heading.
-        $settings->add(new admin_setting_heading('pubkeyssetting',
-            get_string('pubkeysetting', 'local_jwttomoodletoken'),
-            get_string('pubkeysettingdesc', 'local_jwttomoodletoken')));
-
         // Public key.
         $settings->add(new admin_setting_configtextarea('local_jwttomoodletoken/pubkey',
-            get_string('pubkey', 'local_jwttomoodletoken'), '', '', PARAM_RAW_TRIMMED));
+            get_string('pubkey', 'local_jwttomoodletoken'), get_string('pubkeydesc', 'local_jwttomoodletoken'), '', PARAM_RAW_TRIMMED));
 
         // Select algo.
         $options = array_combine(array_keys(\Firebase\JWT\JWT::$supported_algs), array_keys(\Firebase\JWT\JWT::$supported_algs));
