@@ -18,6 +18,7 @@ namespace local_jwttomoodletoken\local;
 
 require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWT.php');
 require_once($CFG->dirroot . '/local/jwttomoodletoken/phpjwt/JWK.php');
+require_once($CFG->libdir . '/filelib.php');
 
 use curl;
 use moodle_exception;

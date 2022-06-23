@@ -97,6 +97,7 @@ class get_token extends external_api {
             \core_user::require_active_user($user);
         } else {
             // We have to create this user as it does not yet exist.
+            require_once($CFG->dirroot.'/user/lib.php');
             $newuser = (object)[
                 'auth'         => 'SAML2',
                 'confirmed'    => 1,
@@ -106,13 +107,12 @@ class get_token extends external_api {
                 'description'  => 'Autocreated from Azure AD',
                 'username'     => $email,
                 'email'        => $email,
-                'password'     => 'not cached',
-                'firstname'    => $token_contents->name,
-                'lastname'     => $token_contents->name,
-                'timecreated'  => time(),
+                'firstname'    => $token_contents->given_name,
+                'lastname'     => $token_contents->family_name,
                 'mnethostid'   => $CFG->mnet_localhost_id,
             ];
-            $newuserid = $DB->insert_record('user', $newuser);
+            // Create user silently (no events triggered).
+            $newuserid = user_create_user($newuser, false, false);
             $user = \core_user::get_user($newuserid, '*', MUST_EXIST);
         }
 
