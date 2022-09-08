@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2022061600;
+$plugin->version = 2022061601;
 $plugin->requires = 2019052000; // Moodle 3.9
 $plugin->component = 'local_jwttomoodletoken';
 
