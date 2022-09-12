@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,15 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Upgrade routines.
+ *
  * @package    local_jwttomoodletoken
- * @author     Nicolas Dunand <nicolas.dunand@unil.ch>
- * @copyright  2020 Copyright Université de Lausanne, RISET {@link http://www.unil.ch/riset}
+ * @copyright  2022 Ecole hôtelière de Lausanne {@link https://www.ehl.edu/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2022091200;
-$plugin->requires = 2019052000; // Moodle 3.9
-$plugin->component = 'local_jwttomoodletoken';
+/**
+ * Upgrade task
+ *
+ * @param int $oldversion the version we are upgrading from
+ * @return bool always true
+ */
+function xmldb_local_jwttomoodletoken_upgrade($oldversion) {
+    global $CFG, $DB;
 
+    if ($oldversion < 2022091200) {
+        // Fix SAML2 user auth type.
+        $DB->execute("UPDATE {user} SET auth = 'saml2' WHERE auth = 'SAML2'");
+
+        upgrade_plugin_savepoint(true, 2022091200, 'local', 'jwttomoodletoken');
+    }
+
+    return true;
+}
