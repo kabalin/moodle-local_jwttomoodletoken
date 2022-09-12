@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['auth'] = 'User auth';
+$string['authdesc'] = 'Auth method to use when plugin creates new user account.';
 $string['cachedef_jwks'] = 'This stores the list of JSON Web Key Sets';
 $string['pluginname'] = 'Moodle UNIL JWT to mobiletoken web service';
 $string['pubkey'] = 'Public Key';

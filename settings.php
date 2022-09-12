@@ -49,6 +49,17 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_configselect('local_jwttomoodletoken/pubalgo',
             get_string('pubalgo', 'local_jwttomoodletoken'), '', 'HS256', $options));
 
+        // Auth method.
+        $auths = core_component::get_plugin_list('auth');
+        $authoptions = [];
+        foreach (array_keys($auths) as $auth) {
+            if (is_enabled_auth($auth)) {
+                $authoptions[$auth] = get_string('pluginname', "auth_{$auth}");
+            }
+        }
+        $defaultplugin = exists_auth_plugin('saml2') ? 'saml2' : 'manual'; // Use saml2 by default for compatibility with former plugin logic.
+        $settings->add(new admin_setting_configselect('local_jwttomoodletoken/auth',
+            get_string('auth', 'local_jwttomoodletoken'), get_string('authdesc', 'local_jwttomoodletoken'), $defaultplugin, $authoptions));
     }
 }
 

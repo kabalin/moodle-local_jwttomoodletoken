@@ -99,7 +99,7 @@ class get_token extends external_api {
             // We have to create this user as it does not yet exist.
             require_once($CFG->dirroot.'/user/lib.php');
             $newuser = (object)[
-                'auth'         => 'saml2', // TODO: Make this configurable.
+                'auth'         => get_config('local_jwttomoodletoken', 'auth'),
                 'confirmed'    => 1,
                 'policyagreed' => 0,
                 'deleted'      => 0,
